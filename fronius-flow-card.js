@@ -5,7 +5,7 @@ class FroniusFlowCard extends HTMLElement {
   setConfig(config) {
     if (!config.pv_power) throw new Error('pv_power entity required');
     this._config = {
-      max_pv: 10000, max_grid: 10000, max_battery: 10000, max_load: 10000, // watts, ring full-scale
+      max_pv: 10000, max_battery: 10000, // watts, ring full-scale (grid/load rings are proportional, no max needed)
       ...config,
     };
     if (!this._built) this._build();
@@ -24,7 +24,7 @@ class FroniusFlowCard extends HTMLElement {
 
   static getStubConfig(hass) {
     const pv = Object.keys(hass.states).find((e) => e.startsWith('sensor.') && /pv|solar/i.test(e));
-    return { pv_power: pv || '', max_pv: 6000, max_grid: 6000, max_battery: 6000, max_load: 6000 };
+    return { pv_power: pv || '', max_pv: 6000, max_battery: 6000 };
   }
 
   _build() {
@@ -333,27 +333,20 @@ class FroniusFlowCardEditor extends HTMLElement {
           <label style="flex:1;min-width:120px;font-size:13px;display:flex;flex-direction:column;gap:4px">Max PV (<span id="max_pv_unit">W</span>)
             <input id="max_pv" type="number" step="any" style="padding:8px;background:var(--card-background-color,#1c1c1c);color:var(--primary-text-color,#fff);border:1px solid var(--divider-color,#444);border-radius:4px"/>
           </label>
-          <label style="flex:1;min-width:120px;font-size:13px;display:flex;flex-direction:column;gap:4px">Max grid (<span id="max_grid_unit">W</span>)
-            <input id="max_grid" type="number" step="any" style="padding:8px;background:var(--card-background-color,#1c1c1c);color:var(--primary-text-color,#fff);border:1px solid var(--divider-color,#444);border-radius:4px"/>
-          </label>
           <label style="flex:1;min-width:120px;font-size:13px;display:flex;flex-direction:column;gap:4px">Max battery (<span id="max_battery_unit">W</span>)
             <input id="max_battery" type="number" step="any" style="padding:8px;background:var(--card-background-color,#1c1c1c);color:var(--primary-text-color,#fff);border:1px solid var(--divider-color,#444);border-radius:4px"/>
           </label>
-          <label style="flex:1;min-width:120px;font-size:13px;display:flex;flex-direction:column;gap:4px">Max load (W)
-            <input id="max_load" type="number" style="padding:8px;background:var(--card-background-color,#1c1c1c);color:var(--primary-text-color,#fff);border:1px solid var(--divider-color,#444);border-radius:4px"/>
-          </label>
         </div>
       </div>`;
-    this._units = { pv: 'W', grid: 'W', battery: 'W' };
+    this._units = { pv: 'W', battery: 'W' };
     this._wire();
     this._syncHass();
-    for (const f of ['pv', 'grid', 'battery']) this._refreshMaxUnit(f);
+    for (const f of ['pv', 'battery']) this._refreshMaxUnit(f);
   }
 
   // Which entity (in priority order) decides a max-field's unit.
   _maxUnitSources = {
     pv: ['pv_power'],
-    grid: ['grid_import_power', 'grid_export_power', 'grid_power'],
     battery: ['battery_discharge_power', 'battery_charge_power', 'battery_power'],
   };
 
@@ -397,7 +390,7 @@ class FroniusFlowCardEditor extends HTMLElement {
   _wire() {
     const entityFields = {
       pv: ['pv_power', 'pv'],
-      grid: ['grid_power', 'grid'], grid_import: ['grid_import_power', 'grid'], grid_export: ['grid_export_power', 'grid'],
+      grid: ['grid_power', null], grid_import: ['grid_import_power', null], grid_export: ['grid_export_power', null],
       batt: ['battery_power', 'battery'], batt_discharge: ['battery_discharge_power', 'battery'], batt_charge: ['battery_charge_power', 'battery'],
       soc: ['battery_soc', null],
     };
@@ -410,7 +403,7 @@ class FroniusFlowCardEditor extends HTMLElement {
         if (maxField) this._refreshMaxUnit(maxField);
       });
     }
-    for (const fieldKey of ['pv', 'grid', 'battery']) {
+    for (const fieldKey of ['pv', 'battery']) {
       const el = this.querySelector(`#max_${fieldKey}`);
       el.addEventListener('input', () => {
         const raw = parseFloat(el.value);
@@ -418,12 +411,6 @@ class FroniusFlowCardEditor extends HTMLElement {
         this._update(`max_${fieldKey}`, watts);
       });
     }
-    const loadEl = this.querySelector('#max_load');
-    loadEl.value = this._config.max_load ?? '';
-    loadEl.addEventListener('input', () => {
-      const v = parseInt(loadEl.value, 10);
-      this._update('max_load', Number.isFinite(v) ? v : undefined);
-    });
   }
 
   _update(key, value) {

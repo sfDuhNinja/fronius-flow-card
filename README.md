@@ -44,14 +44,15 @@ Add the card via the dashboard UI (search "Fronius Flow Card") or YAML:
 ```yaml
 type: custom:fronius-flow-card
 pv_power: sensor.pv_power
-load_power: sensor.house_load_power   # optional — computed from the others if omitted
 grid_power: sensor.grid_power          # signed: + import, - export
 battery_power: sensor.battery_power    # signed: + discharge, - charge
 battery_soc: sensor.battery_soc
 max_pv: 6000
-max_grid: 6000
 max_battery: 6000
 ```
+
+House load isn't a config option — it's always computed from energy balance
+(production + net import + net discharge = consumption).
 
 ### Two entities instead of one signed entity
 
@@ -73,7 +74,7 @@ battery_soc: sensor.battery_soc
 | `battery_power` | no | Signed battery power (+discharge/-charge) |
 | `battery_discharge_power` / `battery_charge_power` | no | Unsigned pair; wins over `battery_power` if either is set |
 | `battery_soc` | no | Battery state of charge (%), shown inside the battery icon |
-| `max_pv` / `max_grid` / `max_battery` / `max_load` | no | Full-scale watts for each ring gauge (default 10000) |
+| `max_pv` / `max_battery` | no | Full-scale watts for the PV and battery ring gauges (default 10000). Grid and load rings are proportional to current total power flow, not a fixed max. |
 
 ## License
 
