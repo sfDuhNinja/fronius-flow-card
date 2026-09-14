@@ -101,7 +101,7 @@ class FroniusFlowCard extends HTMLElement {
             <g id="ff-dots" mask="url(#ff-fade-mask)"></g>
             ${Object.entries(NODES).map(([id, n]) => this._node(id, n, R)).join('')}
             <circle cx="${hub.cx}" cy="${hub.cy}" r="${HUBR}" fill="#E2001A"/>
-            <g transform="translate(${hub.cx - 11},${hub.cy - 11})">${ICONS.hub}</g>
+            <g transform="translate(${hub.cx - 13.5},${hub.cy - 13.5})">${ICONS.hub}</g>
           </svg>
         </div>
       </ha-card>
@@ -288,7 +288,7 @@ const ICONS = {
     <rect x="2" y="6.5" width="18" height="11" rx="2.5" fill="none" stroke="currentColor" stroke-width="1.6"/>
     <rect x="20.5" y="9.25" width="2" height="5.5" rx="1" fill="currentColor"/>
   </svg>`,
-  hub: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="22" height="22">
+  hub: `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" width="27" height="27">
     <path fill="#fff" d="M5,3C3.89,3 3,3.89 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5C21,3.89 20.1,3 19,3H5M12,5C15.09,5 17.82,7.04 18.7,10H16A1,1 0 0,0 15,11V13A1,1 0 0,0 16,14H18.71C17.82,16.97 15.09,19 12,19A7,7 0 0,1 5,12A7,7 0 0,1 12,5M12,10A2,2 0 0,0 10,12A2,2 0 0,0 12,14A2,2 0 0,0 14,12A2,2 0 0,0 12,10Z"/>
   </svg>`,
 };
